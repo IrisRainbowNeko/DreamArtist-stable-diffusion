@@ -28,6 +28,7 @@ APT-prompt tuning: (prompt: ptun-cnx, loli;  negtive: ptun-cnx-uc)
 
 webui prompt tuning: (prompt: ptun-webui, loli;  negtive: None)
 ![](imgs/pwebui.png)
+![](imgs/webui.png)
 
 no prompt tuning: (prompt: loli;  negtive: None)
 ![](imgs/raw.png)
