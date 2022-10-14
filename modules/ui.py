@@ -990,7 +990,8 @@ def create_ui(wrap_gradio_gpu_call):
                     cfg_scale = gr.Number(label='Negtive scale', value=5.0)
                     dataset_directory = gr.Textbox(label='Dataset directory', placeholder="Path to directory with input images")
                     log_directory = gr.Textbox(label='Log directory', placeholder="Path to directory where to write outputs", value="textual_inversion")
-                    template_file = gr.Textbox(label='Prompt template file', value=os.path.join(script_path, "textual_inversion_templates", "style_filewords.txt"))
+                    disc_path = gr.Textbox(label='Classifier path', placeholder="Path to classifier ckpt", value="models/convnext/checkpoint-best_t5.pth")
+                    template_file = gr.Textbox(label='Prompt template file', value=os.path.join(script_path, "textual_inversion_templates", "style.txt"))
                     steps = gr.Number(label='Max steps', value=100000, precision=0)
                     create_image_every = gr.Number(label='Save an image to log directory every N steps, 0 to disable', value=500, precision=0)
                     save_embedding_every = gr.Number(label='Save a copy of embedding to log directory every N steps, 0 to disable', value=500, precision=0)
@@ -1057,6 +1058,7 @@ def create_ui(wrap_gradio_gpu_call):
                 create_image_every,
                 save_embedding_every,
                 template_file,
+                disc_path,
             ],
             outputs=[
                 ti_output,
@@ -1207,7 +1209,7 @@ def create_ui(wrap_gradio_gpu_call):
         (extras_interface, "Extras", "extras"),
         (pnginfo_interface, "PNG Info", "pnginfo"),
         (modelmerger_interface, "Checkpoint Merger", "modelmerger"),
-        (textual_inversion_interface, "Textual inversion", "ti"),
+        (textual_inversion_interface, "Prompt Tuning (ConvNext)", "ti"),
         (settings_interface, "Settings", "settings"),
     ]
 

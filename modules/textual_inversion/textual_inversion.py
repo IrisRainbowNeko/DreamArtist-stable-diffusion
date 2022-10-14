@@ -10,7 +10,7 @@ from torch.nn import functional as F
 
 from modules import shared, devices, sd_hijack, processing, sd_models
 import modules.textual_inversion.dataset
-
+from modules.conv_next.interface import XPDiscriminator
 
 class Embedding:
     def __init__(self, vec, name, step=None):
@@ -156,7 +156,7 @@ def create_embedding(name, num_vectors_per_token, init_text='*'):
     return fn
 
 
-def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_directory, steps, create_image_every, save_embedding_every, template_file):
+def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_directory, steps, create_image_every, save_embedding_every, template_file, classifier_path):
     assert embedding_name, 'embedding not selected'
 
     shared.state.textinfo = "Initializing textual inversion training..."
@@ -194,6 +194,13 @@ def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_direct
     optimizer = torch.optim.AdamW([embedding.vec, embedding_uc.vec], lr=learn_rate)
     schedule = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3000, gamma=0.3)
 
+    disc = XPDiscriminator(classifier_path) if (classifier_path is not None) and os.path.exists(classifier_path) else None
+
+    if disc is not None:
+        disc_label=torch.tensor([1]).cuda()
+        ce=torch.nn.CrossEntropyLoss()
+        print('use convnext discriminator')
+
     losses = torch.zeros((32,))
 
     last_saved_file = "<none>"
@@ -225,7 +232,13 @@ def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_direct
             output = shared.sd_model(x.unsqueeze(0), c_in, scale = cfg_scale)
             #print(shared.sd_model)
             x_samples_ddim = shared.sd_model.decode_first_stage(output[2])
-            loss = output[0] + F.l1_loss(timg, x_samples_ddim)
+
+            if disc is not None:
+                #loss = ce(disc.get_all(x_samples_ddim), disc_label)
+                loss = (1-disc.get_score(x_samples_ddim)).mean()
+            else:
+                loss = output[0] + F.l1_loss(timg, x_samples_ddim)
+
             del x
 
             losses[embedding.step % losses.shape[0]] = loss.item()
@@ -235,7 +248,7 @@ def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_direct
             optimizer.step()
             schedule.step()
 
-        pbar.set_description(f"loss: {losses.mean():.7f}")
+        pbar.set_description(f"loss: {losses.mean():.7f}, grad:{embedding.vec.grad.mean():.7f}")
 
         if embedding.step > 0 and embedding_dir is not None and embedding.step % save_embedding_every == 0:
             last_saved_file = os.path.join(embedding_dir, f'{embedding_name}-{embedding.step}.pt')
