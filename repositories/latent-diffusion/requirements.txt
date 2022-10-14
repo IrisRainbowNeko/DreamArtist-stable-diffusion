@@ -1,0 +1,7 @@
+Pillow
+torch
+pytorch_lightning
+torchvision
+einops
+numpy
+omegaconf

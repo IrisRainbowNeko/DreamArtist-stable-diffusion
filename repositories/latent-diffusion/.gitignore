@@ -1,0 +1,3 @@
+.idea
+experiments/pretrained_models/model.ckpt
+experiments/pretrained_models/project.yaml
