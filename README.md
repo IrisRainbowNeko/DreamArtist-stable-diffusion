@@ -10,6 +10,9 @@ APT-prompt, 每一张都是壁纸！告别繁琐的咒文咏唱，一个词足�
 + 增加基于模型的prompt tuning。基于我之前开发的[AI p站爬虫](https://github.com/7eu7d7/pixiv_AI_crawler)中
 训练的convnext模型，用另一个AI评估生成图像质量，作为判别器辅助模型训练。可以让prompt学会高质量这一概念，或是学会你的xp。
 
+# 预览
+![](imgs/p1.png)
+![](imgs/p2.png)
 
 # 使用方法
 
