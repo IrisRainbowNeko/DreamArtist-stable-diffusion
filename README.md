@@ -23,6 +23,9 @@ APT-prompt, 每一张都是壁纸！告别繁琐的咒文咏唱，一个词足�
 
 # 效果对比
 
+复杂咒文prompt: (prompt: masterpiece, best quality, loli;  negtive: lowres, bad anatomy, bad hands, text, error, missing fingers, extra fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry)
+![](imgs/artificial.png)
+
 APT-prompt tuning: (prompt: ptun-cnx, loli;  negtive: ptun-cnx-uc)
 ![](imgs/cnx.png)
 
