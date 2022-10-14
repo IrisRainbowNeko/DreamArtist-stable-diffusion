@@ -1,7 +1,7 @@
 # Stable Diffusion web UI (Advance Prompt Tuning)
 基于[Stable Diffusion web UI](https://github.com/AUTOMATIC1111/stable-diffusion-webui)魔改。
 
-APT-prompt, 每一张都是壁纸！
+APT-prompt, 每一张都是壁纸！告别繁琐的咒文咏唱，一个词足矣！
 ![](txt2img_Screenshot.png)
 
 优化prompt tuning，添加如下算法：
