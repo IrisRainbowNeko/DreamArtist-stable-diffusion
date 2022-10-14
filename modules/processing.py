@@ -83,6 +83,7 @@ class StableDiffusionProcessing:
         self.s_tmin = opts.s_tmin
         self.s_tmax = float('inf')  # not representable as a standard ui option
         self.s_noise = opts.s_noise
+        print('np:', negative_prompt)
 
         if not seed_enable_extras:
             self.subseed = -1

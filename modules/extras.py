@@ -170,8 +170,8 @@ def run_modelmerger(primary_model_name, secondary_model_name, interp_method, int
     print(f"Loading {secondary_model_info.filename}...")
     secondary_model = torch.load(secondary_model_info.filename, map_location='cpu')
    
-    theta_0 = primary_model['state_dict']
-    theta_1 = secondary_model['state_dict']
+    theta_0 = primary_model['state_dict'] if 'state_dict' in primary_model else primary_model
+    theta_1 = secondary_model['state_dict'] if 'state_dict' in secondary_model else secondary_model
 
     theta_funcs = {
         "Weighted Sum": weighted_sum,

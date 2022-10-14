@@ -122,7 +122,7 @@ def load_model_weights(model, checkpoint_file, sd_model_hash):
     pl_sd = torch.load(checkpoint_file, map_location="cpu")
     if "global_step" in pl_sd:
         print(f"Global Step: {pl_sd['global_step']}")
-    sd = pl_sd["state_dict"]
+    sd = pl_sd
 
     model.load_state_dict(sd, strict=False)
 

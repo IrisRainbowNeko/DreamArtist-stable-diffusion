@@ -6,7 +6,7 @@ import torch
 import tqdm
 import html
 import datetime
-
+from torch.nn import functional as F
 
 from modules import shared, devices, sd_hijack, processing, sd_models
 import modules.textual_inversion.dataset
@@ -156,7 +156,7 @@ def create_embedding(name, num_vectors_per_token, init_text='*'):
     return fn
 
 
-def train_embedding(embedding_name, learn_rate, data_root, log_directory, steps, create_image_every, save_embedding_every, template_file):
+def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_directory, steps, create_image_every, save_embedding_every, template_file):
     assert embedding_name, 'embedding not selected'
 
     shared.state.textinfo = "Initializing textual inversion training..."
@@ -187,9 +187,12 @@ def train_embedding(embedding_name, learn_rate, data_root, log_directory, steps,
     hijack = sd_hijack.model_hijack
 
     embedding = hijack.embedding_db.word_embeddings[embedding_name]
+    embedding_uc = hijack.embedding_db.word_embeddings[embedding_name+'-uc']
     embedding.vec.requires_grad = True
+    embedding_uc.vec.requires_grad = True
 
-    optimizer = torch.optim.AdamW([embedding.vec], lr=learn_rate)
+    optimizer = torch.optim.AdamW([embedding.vec, embedding_uc.vec], lr=learn_rate)
+    schedule = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3000, gamma=0.3)
 
     losses = torch.zeros((32,))
 
@@ -201,8 +204,9 @@ def train_embedding(embedding_name, learn_rate, data_root, log_directory, steps,
         return embedding, filename
 
     pbar = tqdm.tqdm(enumerate(ds), total=steps-ititial_step)
-    for i, (x, text) in pbar:
+    for i, (timg, x, text) in pbar:
         embedding.step = i + ititial_step
+        embedding_uc.step = i + ititial_step
 
         if embedding.step > steps:
             break
@@ -212,9 +216,16 @@ def train_embedding(embedding_name, learn_rate, data_root, log_directory, steps,
 
         with torch.autocast("cuda"):
             c = cond_model([text])
+            uc = cond_model([text.replace(ds.placeholder_token, ds.placeholder_token+'-uc')])
+
+            c_in = torch.cat([uc, c])
+            #print(c_in.shape)
 
             x = x.to(devices.device)
-            loss = shared.sd_model(x.unsqueeze(0), c)[0]
+            output = shared.sd_model(x.unsqueeze(0), c_in, scale = cfg_scale)
+            #print(shared.sd_model)
+            x_samples_ddim = shared.sd_model.decode_first_stage(output[2])
+            loss = output[0] + F.l1_loss(timg, x_samples_ddim)
             del x
 
             losses[embedding.step % losses.shape[0]] = loss.item()
@@ -222,12 +233,15 @@ def train_embedding(embedding_name, learn_rate, data_root, log_directory, steps,
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            schedule.step()
 
         pbar.set_description(f"loss: {losses.mean():.7f}")
 
         if embedding.step > 0 and embedding_dir is not None and embedding.step % save_embedding_every == 0:
             last_saved_file = os.path.join(embedding_dir, f'{embedding_name}-{embedding.step}.pt')
             embedding.save(last_saved_file)
+            last_saved_file = os.path.join(embedding_dir, f'{embedding_name}-uc-{embedding.step}.pt')
+            embedding_uc.save(last_saved_file)
 
         if embedding.step > 0 and images_dir is not None and embedding.step % create_image_every == 0:
             last_saved_image = os.path.join(images_dir, f'{embedding_name}-{embedding.step}.png')
@@ -238,6 +252,8 @@ def train_embedding(embedding_name, learn_rate, data_root, log_directory, steps,
                 steps=20,
                 do_not_save_grid=True,
                 do_not_save_samples=True,
+                negative_prompt=text.replace(ds.placeholder_token, ds.placeholder_token+'-uc'),
+                cfg_scale=cfg_scale,
             )
 
             processed = processing.process_images(p)
@@ -266,6 +282,11 @@ Last saved image: {html.escape(last_saved_image)}<br/>
     embedding.sd_checkpoint_name = checkpoint.model_name
     embedding.cached_checksum = None
     embedding.save(filename)
+
+    embedding_uc.sd_checkpoint = checkpoint.hash
+    embedding_uc.sd_checkpoint_name = checkpoint.model_name
+    embedding_uc.cached_checksum = None
+    embedding_uc.save(f'{filename[:-3]}-uc.pt')
 
     return embedding, filename
 
