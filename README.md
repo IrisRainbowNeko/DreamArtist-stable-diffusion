@@ -31,6 +31,11 @@ APT-prompt, 每一张都是壁纸！告别繁琐的咒文咏唱，一个词足�
 
 APT-prompt tuning: (prompt: ptun-cnx, loli;  negtive: ptun-cnx-uc)
 ![](imgs/cnx.png)
+加入细节描述可以进一步提升
+
+(prompt: ptun-d, loli, light blue hair, outside, blue butterfly, with flowers in hand, cat ears and tail, buildings in the background;   
+negtive: ptun-d-uc, lowres, bad anatomy, bad hands, text, error, missing fingers, extra fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry)
+![](imgs/cnx2.png)
 
 webui prompt tuning: (prompt: ptun-webui, loli;  negtive: None)
 ![](imgs/pwebui.png)
