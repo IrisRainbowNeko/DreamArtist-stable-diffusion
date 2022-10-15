@@ -984,8 +984,9 @@ def create_ui(wrap_gradio_gpu_call):
                             run_preprocess = gr.Button(value="Preprocess", variant='primary')
 
                 with gr.Group():
-                    gr.HTML(value="<p style='margin-bottom: 0.7em'>Train an embedding; must specify a directory with a set of 512x512 images</p>")
+                    gr.HTML(value="<p style='margin-bottom: 0.7em'>Train an embedding</p>")
                     train_embedding_name = gr.Dropdown(label='Embedding', choices=sorted(sd_hijack.model_hijack.embedding_db.word_embeddings.keys()))
+                    img_size = gr.Slider(minimum=64, maximum=640, step=64, label="Image size", value=512)
                     learn_rate = gr.Number(label='Learning rate', value=5.0e-03)
                     cfg_scale = gr.Number(label='Negtive scale', value=5.0)
                     dataset_directory = gr.Textbox(label='Dataset directory', placeholder="Path to directory with input images")
@@ -1059,6 +1060,7 @@ def create_ui(wrap_gradio_gpu_call):
                 save_embedding_every,
                 template_file,
                 disc_path,
+                img_size,
             ],
             outputs=[
                 ti_output,

@@ -156,7 +156,8 @@ def create_embedding(name, num_vectors_per_token, init_text='*'):
     return fn
 
 
-def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_directory, steps, create_image_every, save_embedding_every, template_file, classifier_path):
+def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_directory, steps, create_image_every, save_embedding_every, template_file,
+                    classifier_path, img_size):
     assert embedding_name, 'embedding not selected'
 
     shared.state.textinfo = "Initializing textual inversion training..."
@@ -182,7 +183,8 @@ def train_embedding(embedding_name, learn_rate, cfg_scale, data_root, log_direct
 
     shared.state.textinfo = f"Preparing dataset from {html.escape(data_root)}..."
     with torch.autocast("cuda"):
-        ds = modules.textual_inversion.dataset.PersonalizedBase(data_root=data_root, size=512, placeholder_token=embedding_name, model=shared.sd_model, device=devices.device, template_file=template_file)
+        ds = modules.textual_inversion.dataset.PersonalizedBase(data_root=data_root, size=img_size, placeholder_token=embedding_name,
+                            model=shared.sd_model, device=devices.device, template_file=template_file, width=img_size, height=img_size)
 
     hijack = sd_hijack.model_hijack
 
