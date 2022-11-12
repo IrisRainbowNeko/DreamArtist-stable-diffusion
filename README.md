@@ -45,6 +45,9 @@ If your VRAM is low or you want save time, you can uncheck the ```reconstruction
 # Prompt Compositions
 ![](imgs/exp_comp.png)
 
+# Comparison on One-Shot Learning
+![](imgs/cmp.png)
+
 # Other Results
 ![](imgs/cnx.png)
 ![](imgs/cnx2.png)
