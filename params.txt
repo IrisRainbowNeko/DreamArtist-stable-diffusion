@@ -1,0 +1,3 @@
+masterpiece, best quality, ani-test1
+Negative prompt: ani-test1-neg, lowers, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, nsfw, naked
+Steps: 30, Sampler: Euler a, CFG scale: 7, Seed: -1, Size: 512x512, Model hash: e6e8e1fc, Batch size: 4, Batch pos: 0
