@@ -1261,7 +1261,7 @@ def create_ui(wrap_gradio_gpu_call):
                     gr.HTML(value='<p style="margin-bottom: 0.7em">DreamArtist</p>')
                     with gr.Row():
                         neg_train = gr.Checkbox(label='Train with DreamArtist', value=True)
-                        rec_train = gr.Checkbox(label='Train with reconstruction', value=True)
+                        rec_train = gr.Checkbox(label='Train with reconstruction', value=False)
                     cfg_scale = gr.Number(label='CFG scale', value=5.0)
                     rec_loss_w = gr.Slider(minimum=0.01, maximum=1.0, step=0.01, label="Reconstruction loss weight", value=1.0)
                     neg_lr_w = gr.Slider(minimum=0.2, maximum=5.0, step=0.05, label="Negative lr weight", value=1.0)

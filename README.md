@@ -2,6 +2,8 @@
 This repo is the official PyTorch implementation of ***"DreamArtist: Towards Controllable One-Shot Text-to-Image Generation via Contrastive Prompt-Tuning"*** 
 with [Stable-Diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui).
 
+***Stable-Diffusion-webui Extension Version :*** [DreamArtist-sd-webui-extension](https://github.com/7eu7d7/DreamArtist-sd-webui-extension)
+
 Everyone is an artist. Rome wasn't built in a day, but your artist dreams can be!
 
 With just ***one*** training image DreamArtist learns the content and style in it, generating diverse high-quality images with high controllability.
