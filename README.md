@@ -9,10 +9,10 @@ Everyone is an artist. Rome wasn't built in a day, but your artist dreams can be
 With just ***one*** training image DreamArtist learns the content and style in it, generating diverse high-quality images with high controllability.
 Embeddings of DreamArtist can be easily combined with additional descriptions, as well as two learned embeddings.
 
-![](imgs/exp1.png)
-![](imgs/exp_text1.png)
-![](imgs/exp_text2.png)
-![](imgs/exp_text3.png)
+![](imgs/exp1.jpg)
+![](imgs/exp_text1.jpg)
+![](imgs/exp_text2.jpg)
+![](imgs/exp_text3.jpg)
 
 # Setup and Running
 
@@ -26,12 +26,12 @@ Following the [instructions of webui](https://github.com/AUTOMATIC1111/stable-di
 ## Training
 
 First create the positive and negative embeddings in ```Create Embedding``` Tab.
-![](imgs/create.png)
+![](imgs/create.jpg)
 
 Then, select positive embedding and set the parameters and image folder path in the ```Train``` Tab to start training.
 The corresponding negative embedding is loaded automatically.
 If your VRAM is low or you want save time, you can uncheck the ```reconstruction```.
-![](imgs/train.png)
+![](imgs/train.jpg)
 
 
 ## Tested models (need ema version):
@@ -40,14 +40,14 @@ If your VRAM is low or you want save time, you can uncheck the ```reconstruction
 + Anything v3.0
 
 # Style Clone
-![](imgs/exp_style.png)
+![](imgs/exp_style.jpg)
 
 # Prompt Compositions
-![](imgs/exp_comp.png)
+![](imgs/exp_comp.jpg)
 
 # Comparison on One-Shot Learning
-![](imgs/cmp.png)
+![](imgs/cmp.jpg)
 
 # Other Results
-![](imgs/cnx.png)
-![](imgs/cnx2.png)
+![](imgs/cnx.jpg)
+![](imgs/cnx2.jpg)
