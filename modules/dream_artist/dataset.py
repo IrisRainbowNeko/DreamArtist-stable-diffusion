@@ -23,6 +23,14 @@ class DatasetEntry:
         self.cond = None
         self.cond_text = None
 
+class RatioCrop():
+    def __init__(self, width, height):
+        self.width=width
+        self.height=height
+
+    def __call__(self, image):
+        w, h = image.size
+        return image.crop((w//2-self.width//2, h//2-self.height//2, w//2+self.width//2, h//2+self.height//2))
 
 class PersonalizedBase(Dataset):
     def __init__(self, data_root, width, height, repeats, flip_p=0.5, placeholder_token="*", model=None, device=None, template_file=None, include_cond=False, batch_size=1):
@@ -49,7 +57,8 @@ class PersonalizedBase(Dataset):
         # rasize and crop, not change the image ratio
         TR = transforms.Compose([
             transforms.Resize(min(self.width, self.height), interpolation=transforms.InterpolationMode.BICUBIC),
-            transforms.CenterCrop(min(self.width, self.height)),
+            #transforms.CenterCrop(min(self.width, self.height)),
+            RatioCrop(self.width, self.height),
             transforms.ToTensor()
         ])
 

@@ -1279,6 +1279,17 @@ def create_ui(wrap_gradio_gpu_call):
                     save_image_with_stored_embedding = gr.Checkbox(label='Save images with embedding in PNG chunks', value=True)
                     preview_from_txt2img = gr.Checkbox(label='Read parameters (prompt, etc...) from txt2img tab when making previews', value=False)
 
+                    gr.HTML(value='<p style="margin-bottom: 0.7em">Experimental features (May be solve the problem of erratic training and difficult to reproduce [set EMA to 0.97])</p>')
+                    with gr.Row():
+                        ema_w = gr.Number(label='EMA (positive)', value=1.0, interactive=True)
+                        ema_rep_step = gr.Number(label='EMA replace steps (positive)', value=25, interactive=True)
+                        ema_w_neg = gr.Number(label='EMA (nagetive)', value=1.0, interactive=True)
+                        ema_rep_step_neg = gr.Number(label='EMA replace steps (nagative)', value=25, interactive=True)
+
+                    with gr.Row():
+                        adam_beta1 = gr.Number(label='beta1', value=0.9, interactive=True)
+                        adam_beta2 = gr.Number(label='beta2', value=0.999, interactive=True)
+
                     with gr.Row():
                         interrupt_training = gr.Button(value="Interrupt")
                         train_hypernetwork = gr.Button(value="Train Hypernetwork", variant='primary')
@@ -1384,7 +1395,13 @@ def create_ui(wrap_gradio_gpu_call):
                 neg_train,
                 rec_train,
                 rec_loss_w,
-                neg_lr_w
+                neg_lr_w,
+                ema_w,
+                ema_rep_step,
+                ema_w_neg,
+                ema_rep_step_neg,
+                adam_beta1,
+                adam_beta2
             ],
             outputs=[
                 ti_output,

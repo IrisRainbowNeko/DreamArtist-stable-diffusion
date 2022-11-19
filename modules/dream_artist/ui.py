@@ -37,7 +37,7 @@ def train_embedding(*args):
 
         res = f"""
 Training {'interrupted' if shared.state.interrupted else 'finished'} at {embedding.step} steps.
-Embedding saved to {html.escape(filename)}
+Embedding saved to {html.escape(filename)} and {html.escape(filename[:-3]+"-neg.pt")}
 """
         return res, ""
     except Exception:

@@ -7,6 +7,7 @@ import tqdm
 import html
 import datetime
 import csv
+from copy import deepcopy
 
 from PIL import Image, PngImagePlugin
 from torch.nn import functional as F
@@ -155,6 +156,22 @@ class EmbeddingDatabase:
 
         return None, None
 
+class EMA():
+    def __init__(self, beta):
+        super().__init__()
+        self.beta = beta
+
+    def update_model_average(self, ma_model, current_model):
+        current_params, ma_params = current_model.vec, ma_model.vec
+        old_weight, up_weight = ma_params.data, current_params.data
+        ma_params.data = self.update_average(old_weight, up_weight)
+
+    def update_average(self, old, new):
+        if old is None:
+            return new
+        return old * self.beta + (1 - self.beta) * new
+
+
 
 def create_embedding(name, num_vectors_per_token, overwrite_old, init_text='*'):
     cond_model = shared.sd_model.cond_stage_model
@@ -286,12 +303,14 @@ def p_losses_hook(x_start, cond, t, noise=None, scale=5.0):
     return loss, loss_dict, img
 
 def train_embedding(embedding_name, learn_rate, batch_size, data_root, log_directory, training_width, training_height, steps, create_image_every, save_embedding_every, template_file, save_image_with_stored_embedding, preview_from_txt2img, preview_prompt, preview_negative_prompt, preview_steps, preview_sampler_index, preview_cfg_scale, preview_seed, preview_width, preview_height,
-                    cfg_scale, classifier_path, use_negative, use_rec, rec_loss_w, neg_lr_w):
+                    cfg_scale, classifier_path, use_negative, use_rec, rec_loss_w, neg_lr_w, ema_w, ema_rep_step, ema_w_neg, ema_rep_step_neg, adam_beta1, adam_beta2):
     save_embedding_every = save_embedding_every or 0
     create_image_every = create_image_every or 0
     validate_train_inputs(embedding_name, learn_rate, batch_size, data_root, template_file, steps, save_embedding_every, create_image_every, log_directory, name="embedding")
 
     shared.sd_model.p_losses = p_losses_hook  # hook p_losses
+
+    shared.sd_model.first_stage_model.to(devices.device)
 
     shared.state.textinfo = "Initializing prompt tuning..."
     shared.state.job_count = steps
@@ -299,7 +318,7 @@ def train_embedding(embedding_name, learn_rate, batch_size, data_root, log_direc
     filename = os.path.join(shared.cmd_opts.embeddings_dir, f'{embedding_name}.pt')
 
     log_directory = os.path.join(log_directory, datetime.datetime.now().strftime("%Y-%m-%d"), embedding_name)
-    unload = shared.opts.unload_models_when_training
+    unload = False #shared.opts.unload_models_when_training
 
     if save_embedding_every > 0:
         embedding_dir = os.path.join(log_directory, "embeddings")
@@ -340,9 +359,15 @@ def train_embedding(embedding_name, learn_rate, batch_size, data_root, log_direc
     if unload:
         shared.sd_model.first_stage_model.to(devices.cpu)
 
+    ema = EMA(ema_w)
+    ema_neg = EMA(ema_w_neg)
+
+    embedding_ema = deepcopy(embedding)
+
     embedding.vec.requires_grad = True
     if use_negative:
         embedding_neg = hijack.embedding_db.word_embeddings[embedding_name + '-neg']  # negative prompt embeddings
+        embedding_neg_ema = deepcopy(embedding_neg)
         embedding_neg.vec.requires_grad = True
 
     hyper_param = {
@@ -373,7 +398,8 @@ def train_embedding(embedding_name, learn_rate, batch_size, data_root, log_direc
         #optimizer = torch.optim.AdamW([embedding.vec, embedding_neg.vec], lr=scheduler.learn_rate)
         optimizer = torch.optim.AdamW([
             {'params': embedding.vec},
-            {'params': embedding_neg.vec, 'lr': scheduler.learn_rate*neg_lr_w}], lr=scheduler.learn_rate)
+            {'params': embedding_neg.vec, 'lr': scheduler.learn_rate * neg_lr_w}], lr=scheduler.learn_rate,
+            betas=(adam_beta1, adam_beta2))
     else:
         optimizer = torch.optim.AdamW([embedding.vec], lr=scheduler.learn_rate)
 
@@ -425,7 +451,23 @@ def train_embedding(embedding_name, learn_rate, batch_size, data_root, log_direc
 
             optimizer.zero_grad()
             loss.backward()
+
+            torch.nn.utils.clip_grad_norm_(embedding.vec, 1)
+            torch.nn.utils.clip_grad_norm_(embedding_neg.vec, 1)
+
             optimizer.step()
+
+            with torch.no_grad():
+                if ema_w != 1:
+                    ema.update_model_average(embedding_ema, embedding)
+                    if (i+1)%ema_rep_step == 0:
+                        embedding.vec.data = deepcopy(embedding_ema.vec.data)
+
+                if ema_w_neg != 1:
+                    ema_neg.update_model_average(embedding_neg_ema, embedding_neg)
+                    if (i + 1) % ema_rep_step_neg == 0:
+                        embedding_neg.vec.data = deepcopy(embedding_neg_ema.vec.data)
+
 
         steps_done = embedding.step + 1
 
@@ -467,7 +509,7 @@ def train_embedding(embedding_name, learn_rate, batch_size, data_root, log_direc
 
             if preview_from_txt2img:
                 p.prompt = preview_prompt
-                p.negative_prompt = preview_prompt.replace(ds.placeholder_token, ds.placeholder_token + '-neg') if use_negative else preview_negative_prompt,
+                p.negative_prompt = preview_negative_prompt
 
                 p.steps = preview_steps
                 p.sampler_index = preview_sampler_index
@@ -477,6 +519,9 @@ def train_embedding(embedding_name, learn_rate, batch_size, data_root, log_direc
                 p.height = preview_height
             else:
                 p.prompt = entries[0].cond_text
+                if use_negative:
+                    p.negative_prompt = entries[0].cond_text.replace(ds.placeholder_token, ds.placeholder_token + '-neg')
+                    p.cfg_scale = cfg_scale
                 p.steps = 20
                 p.width = training_width
                 p.height = training_height
