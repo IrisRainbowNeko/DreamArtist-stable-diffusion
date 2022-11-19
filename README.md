@@ -36,12 +36,11 @@ After that, the ```names``` of the positive and negative embedding (```{name}```
 Then, select positive embedding and set the parameters and image folder path in the ```Train``` Tab to start training.
 The corresponding negative embedding is loaded automatically.
 If your VRAM is low or you want save time, you can uncheck the ```reconstruction```.
-![](imgs/train.jpg)
 
 [Recommended parameters](https://github.com/7eu7d7/DreamArtist-sd-webui-extension#pre-trained-embeddings)
 
 ***better to train without filewords***
-![](https://github.com/7eu7d7/DreamArtist-sd-webui-extension/blob/master/imgs/train.jpg)
+![](imgs/train.jpg)
 
 Remember to check the option below, otherwise the preview is wrong.
 ![](https://github.com/7eu7d7/DreamArtist-sd-webui-extension/blob/master/imgs/fromtxt.png)
