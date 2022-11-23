@@ -1,4 +1,7 @@
 # DreamArtist
+
+Paper: [![arXiv](https://img.shields.io/badge/arXiv-2211.11337-b31b1b.svg)](https://arxiv.org/abs/2211.11337)
+
 This repo is the official PyTorch implementation of ***"DreamArtist: Towards Controllable One-Shot Text-to-Image Generation via Contrastive Prompt-Tuning"*** 
 with [Stable-Diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui).
 
